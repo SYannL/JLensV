@@ -1,0 +1,32 @@
+nohup: ignoring input
+Physical GPU: 7
+CUDA device: NVIDIA A100 80GB PCIe
+Model: Qwen/Qwen3.5-4B
+Fitting prompts: 1000
+Checkpoint: /bigdata/siyan/jacobian-lens/outputs/qwen35_4b_checkpoint.pt
+Output: /bigdata/siyan/jacobian-lens/outputs/qwen35_4b_jacobian_lens.pt
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files: 100%|██████████| 2/2 [00:00<00:00, 1824.01it/s]
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/426 [00:00<?, ?it/s]Loading weights: 100%|██████████| 426/426 [00:00<00:00, 16672.17it/s]
+[    10s + 10.31s] fit: n_layers=32 d_model=2560, fitting 31 source layers (target=L31) on 1000 prompts
+/bigdata/siyan/miniconda3/envs/jlens/lib/python3.11/site-packages/torch/autograd/graph.py:823: UserWarning: Attempting to run cuBLAS, but there was no current CUDA context! Attempting to set the primary context... (Triggered internally at /pytorch/aten/src/ATen/cuda/CublasHandlePool.cpp:180.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+[  3m55s +224.83s]   prompt 1/1000  seq_len=128 n_valid=111  223s  max||J||/sqrt(d)=6.342  max_d_mean=nan
+[  7m35s +220.58s]   prompt 2/1000  seq_len=128 n_valid=111  221s  max||J||/sqrt(d)=4.790  max_d_mean=5.65e-01
+[ 11m26s +231.08s]   prompt 3/1000  seq_len=128 n_valid=111  231s  max||J||/sqrt(d)=6.383  max_d_mean=5.24e-01
+[ 15m56s +270.19s]   prompt 4/1000  seq_len=128 n_valid=111  270s  max||J||/sqrt(d)=3.299  max_d_mean=2.82e-01
+[ 19m14s +197.01s]   prompt 5/1000  seq_len=128 n_valid=111  197s  max||J||/sqrt(d)=4.251  max_d_mean=2.67e-01
+[ 21m48s +154.64s]   prompt 6/1000  seq_len=128 n_valid=111  155s  max||J||/sqrt(d)=5.825  max_d_mean=2.99e-01
+[ 24m50s +181.44s]   prompt 7/1000  seq_len=128 n_valid=111  181s  max||J||/sqrt(d)=41.010  max_d_mean=1.92e+00
+[ 27m46s +176.74s]   prompt 8/1000  seq_len=128 n_valid=111  177s  max||J||/sqrt(d)=7.852  max_d_mean=1.87e-01
+[ 30m08s +141.68s]   prompt 9/1000  seq_len=128 n_valid=111  142s  max||J||/sqrt(d)=5.183  max_d_mean=1.24e-01
+[ 33m11s +183.00s]   prompt 10/1000  seq_len=128 n_valid=111  183s  max||J||/sqrt(d)=5.483  max_d_mean=1.24e-01
+[ 35m37s +146.23s]   prompt 11/1000  seq_len=128 n_valid=111  146s  max||J||/sqrt(d)=3.242  max_d_mean=9.50e-02
+[ 38m04s +146.61s]   prompt 12/1000  seq_len=128 n_valid=111  147s  max||J||/sqrt(d)=4.151  max_d_mean=9.42e-02
+[ 40m35s +151.50s]   prompt 13/1000  seq_len=128 n_valid=111  151s  max||J||/sqrt(d)=4.237  max_d_mean=9.29e-02
+[ 42m58s +143.13s]   prompt 14/1000  seq_len=128 n_valid=111  143s  max||J||/sqrt(d)=4.533  max_d_mean=8.58e-02
+[ 45m58s +179.67s]   prompt 15/1000  seq_len=128 n_valid=111  180s  max||J||/sqrt(d)=6.292  max_d_mean=1.15e-01
+[ 48m20s +141.88s]   prompt 16/1000  seq_len=128 n_valid=111  142s  max||J||/sqrt(d)=4.326  max_d_mean=8.38e-02
+[ 50m37s +137.25s]   prompt 17/1000  seq_len=128 n_valid=111  137s  max||J||/sqrt(d)=3.332  max_d_mean=6.79e-02
+[ 53m39s +181.58s]   prompt 18/1000  seq_len=128 n_valid=111  182s  max||J||/sqrt(d)=5.728  max_d_mean=9.22e-02

@@ -48,6 +48,10 @@ def configure_logging(level: int | str = logging.INFO) -> None:
     if any(isinstance(h, logging.StreamHandler) for h in package_logger.handlers):
         return
     handler = logging.StreamHandler()
-    handler.setFormatter(_DeltaFormatter("[%(elapsed)s %(delta)s] %(message)s"))
+    handler.setFormatter(
+        _DeltaFormatter(
+            "[%(processName)s %(elapsed)s %(delta)s] %(message)s"
+        )
+    )
     package_logger.addHandler(handler)
     package_logger.propagate = False
