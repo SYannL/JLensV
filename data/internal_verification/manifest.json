@@ -1,0 +1,77 @@
+{
+  "schema_version": "internal-verification-v1",
+  "preparation": {
+    "seed": 20260724,
+    "stepgame_per_hop": 100,
+    "last_selected_datasets": [
+      "processbench",
+      "math500",
+      "prontoqa",
+      "stepgame",
+      "bbeh"
+    ],
+    "excluded_by_design": {
+      "processbench/gsm8k": "The first expansion intentionally uses only non-GSM splits.",
+      "google/reveal": "Gated evaluation-only dataset. A user must accept its access and non-redistribution terms before local download."
+    }
+  },
+  "artifacts": [
+    {
+      "path": "data/internal_verification/bbeh/mini.jsonl",
+      "records": 460,
+      "sha256": "d8cbc3b8fd58ebd89f230f114ccdb11ae9eaf9a3119c5e208fc8fb047153c7ee",
+      "source_repo": "google-deepmind/bbeh",
+      "source_revision": "80d12ca916b7158f22293fcf3144f4d3d854d4be",
+      "license": "CC-BY-4.0 data / Apache-2.0 code"
+    },
+    {
+      "path": "data/internal_verification/math500/test.jsonl",
+      "records": 500,
+      "sha256": "e0f829d75bca7fa299fd48c3fdd8ad1c30df6e1d4acd31cde3fba4f710ae9667",
+      "source_repo": "HuggingFaceH4/MATH-500",
+      "source_revision": "6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be",
+      "license": "MATH dataset terms; research evaluation"
+    },
+    {
+      "path": "data/internal_verification/processbench/math.jsonl",
+      "records": 1000,
+      "sha256": "109f4dcbd6577753e922cfc52651394114b1deace1c117d2d3328e186e149db2",
+      "source_repo": "Qwen/ProcessBench",
+      "source_revision": "3bdcd5371ed567559a78f559c01c13a6deee7604",
+      "license": "Apache-2.0"
+    },
+    {
+      "path": "data/internal_verification/processbench/olympiadbench.jsonl",
+      "records": 1000,
+      "sha256": "40778db0100c20dc78fcd9385eec6b8fcea19b3c2510d204d358ca107096d76b",
+      "source_repo": "Qwen/ProcessBench",
+      "source_revision": "3bdcd5371ed567559a78f559c01c13a6deee7604",
+      "license": "Apache-2.0"
+    },
+    {
+      "path": "data/internal_verification/processbench/omnimath.jsonl",
+      "records": 1000,
+      "sha256": "f3a11506068c8f97d8934f184ae3098598eec28a1fcec284fb11b6bdee61b8f8",
+      "source_repo": "Qwen/ProcessBench",
+      "source_revision": "3bdcd5371ed567559a78f559c01c13a6deee7604",
+      "license": "Apache-2.0"
+    },
+    {
+      "path": "data/internal_verification/prontoqa/proofsonly_1hop_to_5hop_ood.jsonl",
+      "records": 100,
+      "sha256": "42be665dff959f1efbd9ad7b7f063f74a78d9ecddf0c7dc4b996d238195cf5b6",
+      "source_repo": "tasksource/prontoqa",
+      "source_revision": "2b99cc18e64b1684e29ba69f966306d9cc563e8d",
+      "license": "Apache-2.0"
+    },
+    {
+      "path": "data/internal_verification/stepgame/test_stratified_100_per_hop.jsonl",
+      "records": 1000,
+      "sha256": "2e4c979673d220f44a5495c57c68eaf3a013a0c46680a918b76323a12f03087e",
+      "source_repo": "ZhengyanShi/StepGame",
+      "source_revision": "6d859381dfd518cae3f073b268aaa323bf4dcf04",
+      "license": "Source repository terms; research use"
+    }
+  ],
+  "total_records": 5060
+}

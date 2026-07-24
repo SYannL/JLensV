@@ -8,7 +8,12 @@ dist/
 .ruff_cache/
 .ipynb_checkpoints/
 
+# Local Hugging Face model weights
+models/
+
 # jlens outputs
+outputs/
+log/
 *.pt
 slice*.html
 slices/

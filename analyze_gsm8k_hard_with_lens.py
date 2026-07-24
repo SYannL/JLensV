@@ -27,10 +27,13 @@ os.environ["MKL_THREADING_LAYER"] = "GNU"
 os.environ.pop("MKL_SERVICE_FORCE_INTEL", None)
 
 
-SYSTEM_PROMPT = """You are a careful mathematical reasoner solving grade-school
-word problems. Work through the problem step by step, explicitly checking the
-meaning of every quantity and arithmetic operation. Do not skip reasoning steps.
-End with a separate final line in exactly this format:
+THINKING_PROMPT_VERSION = "thinking-native-user-only-v5"
+
+NONTHINKING_PROMPT_VERSION = "nonthinking-concise-gsm8k-v2"
+NONTHINKING_SYSTEM_PROMPT = """Solve grade-school math word problems concisely.
+Use the standard intended interpretation of the problem and do not enumerate
+alternative interpretations. Show the essential calculation, then end with a
+separate final line in exactly this format:
 #### <numeric answer>"""
 
 
@@ -52,7 +55,42 @@ def parse_args() -> argparse.Namespace:
         "--output-dir",
         default="outputs/gsm8k_hard_lens_analysis",
     )
-    parser.add_argument("--max-new-tokens", type=int, default=512)
+    parser.add_argument("--max-new-tokens", type=int, default=2048)
+    parser.add_argument(
+        "--thinking",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help=(
+            "Use the model chat template's thinking mode (default: disabled). "
+            "The default and --no-thinking produce a direct final response."
+        ),
+    )
+    parser.add_argument(
+        "--decoding",
+        choices=("sample", "greedy"),
+        default="sample",
+        help="Generation strategy; sample uses the Qwen thinking-mode defaults",
+    )
+    parser.add_argument("--temperature", type=float, default=1.0)
+    parser.add_argument("--top-p", type=float, default=0.95)
+    parser.add_argument("--sampling-top-k", type=int, default=20)
+    parser.add_argument("--min-p", type=float, default=0.0)
+    parser.add_argument(
+        "--presence-penalty",
+        type=float,
+        default=0.0,
+        help=(
+            "Optional custom presence penalty. Zero (default) uses no custom "
+            "logits processor and is closest to native Transformers generation."
+        ),
+    )
+    parser.add_argument("--repetition-penalty", type=float, default=1.0)
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Base seed; the effective per-sample seed is seed + wrong_id",
+    )
     parser.add_argument(
         "--top-k",
         type=int,
@@ -170,18 +208,24 @@ def _gold_from_rationale(answer: str) -> str | None:
 
 
 def _extract_generated_answer(text: str) -> tuple[str | None, str]:
-    hashes = re.findall(r"####\s*([^\n]+)", text)
+    # GSM8K's answer delimiter is only valid as a separate final-response line.
+    # This deliberately rejects prompt-format restatements such as
+    # "finish with `#### <numeric answer>`".
+    hashes = re.findall(
+        r"(?m)^\s*####\s*([-+]?\$?\d[\d,]*(?:\.\d+)?(?:/\d+)?)\s*$",
+        text,
+    )
     if hashes:
         return hashes[-1].strip(), "hash_delimiter"
     explicit = re.findall(
         r"(?:final\s+answer|answer\s+is)\s*[:=]?\s*"
-        r"([-+]?\$?[\d,]+(?:\.\d+)?(?:/\d+)?)",
+        r"([-+]?\$?\d[\d,]*(?:\.\d+)?(?:/\d+)?)",
         text,
         flags=re.IGNORECASE,
     )
     if explicit:
         return explicit[-1].strip(), "answer_phrase"
-    numbers = re.findall(r"[-+]?\$?[\d,]+(?:\.\d+)?(?:/\d+)?", text)
+    numbers = re.findall(r"[-+]?\$?\d[\d,]*(?:\.\d+)?(?:/\d+)?", text)
     return (numbers[-1].strip(), "last_number") if numbers else (None, "missing")
 
 
@@ -217,30 +261,121 @@ def _decode_tokens(tokenizer: Any, token_ids: list[int]) -> list[str]:
     ]
 
 
-def _render_prompt(tokenizer: Any, question: str) -> tuple[list[dict[str, str]], str]:
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {
-            "role": "user",
-            "content": (
-                f"{question.strip()}\n\n"
-                "Solve this problem using complete chain-of-thought reasoning. "
-                "Check your arithmetic, then finish with `#### <numeric answer>`."
-            ),
-        },
-    ]
+def _render_prompt(
+    tokenizer: Any,
+    question: str,
+    *,
+    enable_thinking: bool,
+) -> tuple[list[dict[str, str]], str]:
+    if enable_thinking:
+        messages = [
+            {
+                "role": "user",
+                "content": (
+                    f"{question.strip()}\n\n"
+                    "Solve the problem and end your response with a separate "
+                    "line in the form `#### <numeric answer>`."
+                ),
+            }
+        ]
+    else:
+        messages = [
+            {"role": "system", "content": NONTHINKING_SYSTEM_PROMPT},
+            {
+                "role": "user",
+                "content": (
+                    f"{question.strip()}\n\n"
+                    "Give a concise solution, then finish with "
+                    "`#### <numeric answer>`."
+                ),
+            },
+        ]
     if getattr(tokenizer, "chat_template", None):
         text = tokenizer.apply_chat_template(
             messages,
             tokenize=False,
             add_generation_prompt=True,
+            enable_thinking=enable_thinking,
         )
     else:
-        text = (
-            f"System: {SYSTEM_PROMPT}\n\n"
-            f"User: {messages[1]['content']}\n\nAssistant:"
+        text = "\n\n".join(
+            f"{message['role'].title()}: {message['content']}"
+            for message in messages
         )
+        text += "\n\nAssistant:"
     return messages, text
+
+
+def _split_generation_ids(
+    tokenizer: Any,
+    generated_ids: list[int],
+    *,
+    thinking_enabled: bool,
+) -> dict[str, Any]:
+    """Split Qwen thinking tokens from the user-visible final response."""
+    eos_token_ids = {
+        token_id
+        for token_id in (
+            tokenizer.eos_token_id,
+            tokenizer.convert_tokens_to_ids("<|endoftext|>"),
+            tokenizer.convert_tokens_to_ids("<|im_end|>"),
+        )
+        if token_id is not None and token_id != tokenizer.unk_token_id
+    }
+    ended_with_eos = bool(
+        generated_ids
+        and generated_ids[-1] in eos_token_ids
+    )
+    content_ids = generated_ids[:-1] if ended_with_eos else generated_ids[:]
+
+    if not thinking_enabled:
+        return {
+            "thinking_ids": [],
+            "final_ids": content_ids,
+            "thinking_closed": True,
+            "thinking_end_step": None,
+            "ended_with_eos": ended_with_eos,
+        }
+
+    thinking_end_id = tokenizer.convert_tokens_to_ids("</think>")
+    if thinking_end_id is None or thinking_end_id == tokenizer.unk_token_id:
+        raise ValueError("tokenizer does not define the Qwen </think> token")
+
+    try:
+        thinking_end_step = content_ids.index(thinking_end_id)
+    except ValueError:
+        return {
+            "thinking_ids": content_ids,
+            "final_ids": [],
+            "thinking_closed": False,
+            "thinking_end_step": None,
+            "ended_with_eos": ended_with_eos,
+        }
+    return {
+        "thinking_ids": content_ids[:thinking_end_step],
+        "final_ids": content_ids[thinking_end_step + 1 :],
+        "thinking_closed": True,
+        "thinking_end_step": thinking_end_step,
+        "ended_with_eos": ended_with_eos,
+    }
+
+
+class _PresencePenaltyLogitsProcessor:
+    """OpenAI/vLLM-style penalty for tokens already generated at least once."""
+
+    def __init__(self, penalty: float, prompt_length: int):
+        self.penalty = penalty
+        self.prompt_length = prompt_length
+
+    def __call__(self, input_ids: Any, scores: Any) -> Any:
+        if self.penalty == 0:
+            return scores
+        scores = scores.clone()
+        for batch_index in range(input_ids.shape[0]):
+            generated_ids = input_ids[batch_index, self.prompt_length :]
+            if generated_ids.numel():
+                scores[batch_index, generated_ids.unique()] -= self.penalty
+        return scores
 
 
 def _generation_details(
@@ -251,10 +386,23 @@ def _generation_details(
     *,
     max_new_tokens: int,
     top_k: int,
+    enable_thinking: bool,
+    decoding: str,
+    temperature: float,
+    top_p: float,
+    sampling_top_k: int,
+    min_p: float,
+    presence_penalty: float,
+    repetition_penalty: float,
+    seed: int,
 ) -> dict[str, Any]:
     import torch
 
-    messages, prompt_text = _render_prompt(tokenizer, row["question"])
+    messages, prompt_text = _render_prompt(
+        tokenizer,
+        row["question"],
+        enable_thinking=enable_thinking,
+    )
     encoded = tokenizer(prompt_text, return_tensors="pt")
     input_ids = encoded.input_ids.to(hf_model.device)
     attention_mask = encoded.attention_mask.to(hf_model.device)
@@ -263,24 +411,69 @@ def _generation_details(
     if pad_token_id is None:
         pad_token_id = tokenizer.eos_token_id
 
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    generation_kwargs: dict[str, Any] = {
+        "input_ids": input_ids,
+        "attention_mask": attention_mask,
+        "max_new_tokens": max_new_tokens,
+        "do_sample": decoding == "sample",
+        "pad_token_id": pad_token_id,
+        "return_dict_in_generate": True,
+        "output_scores": True,
+    }
+    if decoding == "sample":
+        generation_kwargs |= {
+            "temperature": temperature,
+            "top_p": top_p,
+            "top_k": sampling_top_k,
+            "min_p": min_p,
+            "repetition_penalty": repetition_penalty,
+        }
+        if presence_penalty:
+            generation_kwargs["logits_processor"] = [
+                _PresencePenaltyLogitsProcessor(
+                    presence_penalty,
+                    prompt_length=prompt_len,
+                )
+            ]
+
     with torch.inference_mode():
-        generated = hf_model.generate(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            max_new_tokens=max_new_tokens,
-            do_sample=False,
-            pad_token_id=pad_token_id,
-            return_dict_in_generate=True,
-            output_scores=True,
-        )
+        generated = hf_model.generate(**generation_kwargs)
 
     full_ids = generated.sequences[0].tolist()
     generated_ids = full_ids[prompt_len:]
+    raw_generated_text = tokenizer.decode(
+        generated_ids,
+        skip_special_tokens=False,
+        clean_up_tokenization_spaces=False,
+    )
     generated_text = tokenizer.decode(generated_ids, skip_special_tokens=True)
-    parsed_answer, parse_method = _extract_generated_answer(generated_text)
+    sections = _split_generation_ids(
+        tokenizer,
+        generated_ids,
+        thinking_enabled=enable_thinking,
+    )
+    thinking_ids = sections["thinking_ids"]
+    final_ids = sections["final_ids"]
+    thinking_text = tokenizer.decode(thinking_ids, skip_special_tokens=True)
+    final_text = tokenizer.decode(final_ids, skip_special_tokens=True)
+    parsed_answer, parse_method = _extract_generated_answer(final_text)
     gold = row["ground_truth"] or _gold_from_rationale(canonical["answer"])
     parsed_canonical = _canonical_number(parsed_answer)
     gold_canonical = _canonical_number(gold)
+    valid_final_hash = (
+        parse_method == "hash_delimiter" and parsed_canonical is not None
+    )
+    hit_max_new_tokens = (
+        len(generated_ids) >= max_new_tokens and not sections["ended_with_eos"]
+    )
+    generation_complete = bool(
+        sections["ended_with_eos"]
+        and sections["thinking_closed"]
+        and final_text.strip()
+        and valid_final_hash
+    )
 
     token_steps: list[dict[str, Any]] = []
     for step, (score, chosen_id) in enumerate(
@@ -293,9 +486,22 @@ def _generation_details(
         chosen_logprob = float((score[chosen_id] - log_normalizer).cpu())
         alternative_logprobs = (top_values - log_normalizer).cpu().tolist()
         alternative_ids = top_ids.cpu().tolist()
+        if enable_thinking and step == sections["thinking_end_step"]:
+            segment = "thinking_end"
+        elif (
+            enable_thinking
+            and (
+                sections["thinking_end_step"] is None
+                or step < sections["thinking_end_step"]
+            )
+        ):
+            segment = "thinking"
+        else:
+            segment = "final_response"
         token_steps.append(
             {
                 "step": step,
+                "segment": segment,
                 "prediction_position": prompt_len + step - 1,
                 "token_position": prompt_len + step,
                 "token_id": chosen_id,
@@ -310,6 +516,23 @@ def _generation_details(
     return {
         "status": "generated",
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "model_output": {
+            "raw_text": raw_generated_text,
+            "text": generated_text,
+            "thinking": {
+                "token_ids": thinking_ids,
+                "tokens": _decode_tokens(tokenizer, thinking_ids),
+                "text": thinking_text,
+                "n_tokens": len(thinking_ids),
+                "closed": sections["thinking_closed"],
+            },
+            "final_response": {
+                "token_ids": final_ids,
+                "tokens": _decode_tokens(tokenizer, final_ids),
+                "text": final_text,
+                "n_tokens": len(final_ids),
+            },
+        },
         "source": {
             "csv_row": row,
             "canonical_gsm8k": canonical,
@@ -325,18 +548,40 @@ def _generation_details(
             "n_tokens": prompt_len,
         },
         "generation": {
-            "mode": "greedy",
+            "mode": decoding,
+            "thinking_enabled": enable_thinking,
+            "seed": seed,
+            "sampling_parameters": (
+                {
+                    "temperature": temperature,
+                    "top_p": top_p,
+                    "top_k": sampling_top_k,
+                    "min_p": min_p,
+                    "presence_penalty": presence_penalty,
+                    "repetition_penalty": repetition_penalty,
+                }
+                if decoding == "sample"
+                else None
+            ),
             "max_new_tokens": max_new_tokens,
             "token_ids": generated_ids,
             "tokens": _decode_tokens(tokenizer, generated_ids),
             "text": generated_text,
             "n_tokens": len(generated_ids),
-            "ended_with_eos": bool(
-                generated_ids and generated_ids[-1] == tokenizer.eos_token_id
-            ),
+            "ended_with_eos": sections["ended_with_eos"],
+            "hit_max_new_tokens": hit_max_new_tokens,
             "steps": token_steps,
         },
         "full_token_ids": full_ids,
+        "quality": {
+            "thinking_enabled": enable_thinking,
+            "thinking_closed": sections["thinking_closed"],
+            "final_response_present": bool(final_text.strip()),
+            "ended_with_eos": sections["ended_with_eos"],
+            "hit_max_new_tokens": hit_max_new_tokens,
+            "valid_final_hash_answer": valid_final_hash,
+            "complete": generation_complete,
+        },
         "grading": {
             "gold_raw": gold,
             "gold_canonical": gold_canonical,
@@ -363,7 +608,9 @@ def _surface_token_map(
 ) -> tuple[list[int], dict[str, Any]]:
     grading = generation["grading"]
     source = generation["source"]
-    generated_text = generation["generation"]["text"]
+    generated_text = generation.get("model_output", generation["generation"])[
+        "text"
+    ]
     question = source["csv_row"]["question"]
     rationale = source["canonical_gsm8k"]["answer"]
 
@@ -618,6 +865,21 @@ def _summary_record(sample_dir: Path) -> dict[str, Any]:
             ],
             "generated_correct": generation["grading"]["correct"],
             "generation_tokens": generation["generation"]["n_tokens"],
+            "thinking_closed": generation.get("quality", {}).get(
+                "thinking_closed", False
+            ),
+            "ended_with_eos": generation["generation"].get(
+                "ended_with_eos", False
+            ),
+            "hit_max_new_tokens": generation["generation"].get(
+                "hit_max_new_tokens", False
+            ),
+            "valid_final_hash_answer": generation.get("quality", {}).get(
+                "valid_final_hash_answer", False
+            ),
+            "generation_complete": generation.get("quality", {}).get(
+                "complete", False
+            ),
         }
     record["lens_complete"] = lens_path.exists() and (
         sample_dir / "lens_trace.npz"
@@ -635,6 +897,16 @@ def main() -> None:
         raise ValueError("--top-k must be positive and --max-tracked-tokens nonnegative")
     if args.layer_stride <= 0 or args.rank_position_chunk <= 0:
         raise ValueError("layer/rank chunk arguments must be positive")
+    if args.temperature <= 0:
+        raise ValueError("--temperature must be positive")
+    if not 0 <= args.top_p <= 1 or not 0 <= args.min_p <= 1:
+        raise ValueError("--top-p and --min-p must be between 0 and 1")
+    if args.sampling_top_k <= 0 or args.repetition_penalty <= 0:
+        raise ValueError(
+            "--sampling-top-k and --repetition-penalty must be positive"
+        )
+    if args.presence_penalty < 0:
+        raise ValueError("--presence-penalty must be nonnegative")
 
     os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
 
@@ -705,7 +977,12 @@ def main() -> None:
             "visible_device": "cuda:0",
             "name": torch.cuda.get_device_name(0),
         },
-        "system_prompt": SYSTEM_PROMPT,
+        "system_prompt": None if args.thinking else NONTHINKING_SYSTEM_PROMPT,
+        "prompt_version": (
+            THINKING_PROMPT_VERSION
+            if args.thinking
+            else NONTHINKING_PROMPT_VERSION
+        ),
     }
     _atomic_json(output_dir / "run_config.json", run_config)
 
@@ -751,12 +1028,22 @@ def main() -> None:
                     canonical_by_wrong_id[row["wrong_id"]],
                     max_new_tokens=args.max_new_tokens,
                     top_k=args.top_k,
+                    enable_thinking=args.thinking,
+                    decoding=args.decoding,
+                    temperature=args.temperature,
+                    top_p=args.top_p,
+                    sampling_top_k=args.sampling_top_k,
+                    min_p=args.min_p,
+                    presence_penalty=args.presence_penalty,
+                    repetition_penalty=args.repetition_penalty,
+                    seed=args.seed + int(row["wrong_id"]),
                 )
                 _atomic_json(generation_path, generation)
                 print(
                     "  generated answer="
                     f"{generation['grading']['generated_answer_canonical']!r} "
-                    f"correct={generation['grading']['correct']}",
+                    f"correct={generation['grading']['correct']} "
+                    f"complete={generation['quality']['complete']}",
                     flush=True,
                 )
 
@@ -812,11 +1099,60 @@ def main() -> None:
     n_generated = sum("generated_correct" in record for record in summaries)
     n_correct = sum(record.get("generated_correct", False) for record in summaries)
     n_lens = sum(record.get("lens_complete", False) for record in summaries)
+    n_eos = sum(record.get("ended_with_eos", False) for record in summaries)
+    n_thinking_closed = sum(
+        record.get("thinking_closed", False) for record in summaries
+    )
+    n_valid_hash = sum(
+        record.get("valid_final_hash_answer", False) for record in summaries
+    )
+    n_complete = sum(
+        record.get("generation_complete", False) for record in summaries
+    )
+    complete_rate = n_complete / len(rows)
     print(
         f"Done: generated={n_generated}/{len(rows)}, correct={n_correct}/{n_generated}, "
         f"lens_complete={n_lens}/{len(rows)}",
         flush=True,
     )
+    print(
+        "Completion quality: "
+        f"ended_with_eos={n_eos}/{len(rows)}, "
+        f"thinking_closed={n_thinking_closed}/{len(rows)}, "
+        f"valid_final_hash={n_valid_hash}/{len(rows)}, "
+        f"complete={n_complete}/{len(rows)} ({complete_rate:.1%})",
+        flush=True,
+    )
+    incomplete_ids = [
+        row["wrong_id"]
+        for row, record in zip(rows, summaries, strict=True)
+        if not record.get("generation_complete", False)
+    ]
+    if complete_rate >= 0.95:
+        print(
+            f"Recommendation: max_new_tokens={args.max_new_tokens} passes "
+            "the >=95% completion threshold.",
+            flush=True,
+        )
+    elif args.max_new_tokens < 4096:
+        print(
+            "Recommendation: completion is below 95%; rerun the pilot in a "
+            "new directory with --max-new-tokens 4096.",
+            flush=True,
+        )
+    elif args.max_new_tokens < 8192:
+        print(
+            "Recommendation: rerun only incomplete wrong_ids with "
+            "--max-new-tokens 8192: "
+            + ",".join(incomplete_ids),
+            flush=True,
+        )
+    else:
+        print(
+            "Warning: incomplete generations remain at 8192 tokens: "
+            + ",".join(incomplete_ids),
+            flush=True,
+        )
 
 
 if __name__ == "__main__":
