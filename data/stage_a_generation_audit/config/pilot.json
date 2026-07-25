@@ -1,0 +1,19 @@
+{
+  "schema_version": "stage-a-selection-profile-v1",
+  "name": "pilot",
+  "seed": 20260725,
+  "limits": {
+    "processbench": 150,
+    "math500": 100,
+    "prontoqa": 100,
+    "stepgame": 100,
+    "bbeh": 100
+  },
+  "notes": {
+    "processbench": "Balanced across source split, process correctness, and final-answer correctness.",
+    "math500": "Balanced across subject and difficulty level.",
+    "prontoqa": "All 100 records in the selected OOD configuration.",
+    "stepgame": "Balanced across 1-10 hop depth (10 per hop).",
+    "bbeh": "Balanced across restored official task labels."
+  }
+}
