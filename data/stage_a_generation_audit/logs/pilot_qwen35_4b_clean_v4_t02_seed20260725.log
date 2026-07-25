@@ -1,0 +1,13 @@
+nohup: ignoring input
+Loading models/Qwen3.5-4B on physical GPU 0
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/426 [00:00<?, ?it/s]Loading weights: 100%|██████████| 426/426 [00:00<00:00, 12580.61it/s]
+[1/550] processbench processbench/math/math-113
+  tokens=652 complete=True correct=True
+[2/550] processbench processbench/math/math-125
+  tokens=293 complete=True correct=False
+[3/550] processbench processbench/math/math-140
+  tokens=246 complete=True correct=False
+[4/550] processbench processbench/math/math-144
+  tokens=214 complete=True correct=True
+[5/550] processbench processbench/math/math-193
