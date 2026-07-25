@@ -11,6 +11,15 @@ dist/
 # Local Hugging Face model weights
 models/
 
+# Downloaded and generated dataset artifacts
+data/internal_verification/
+data/stage_a_internal_verification/raw/**
+data/stage_a_internal_verification/processed/**
+data/stage_a_internal_verification/manifests/**
+!data/stage_a_internal_verification/raw/.gitignore
+!data/stage_a_internal_verification/processed/.gitignore
+!data/stage_a_internal_verification/manifests/.gitignore
+
 # jlens outputs
 outputs/
 log/
