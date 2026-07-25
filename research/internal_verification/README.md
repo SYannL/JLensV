@@ -1,6 +1,6 @@
 # JLens 内部推理验证：研究记录与数据路线
 
-最后更新：2026-07-24
+最后更新：2026-07-25
 
 本文档是本项目关于 **interpretable LLM / internal reasoning
 verification** 的单一研究记录。它固定当前术语、已有文献、初期方案、
@@ -174,7 +174,220 @@ state 后，经因果验证的内部轨迹仍能提供至少一种非冗余能�
 
 若 H5 不成立，JLens 不应被包装成 verifier；它最多是机制分析工具。
 
-## 5. 初期方法轮廓
+## 5. 此前首选方案：Workspace Recruitment 与 Cognitive Compilation
+
+这一方向是我们在“低至中等算力、但要求 ICLR Oral 级发现”的第一轮筛选中给出的
+**原始首选方案**。它必须被完整保留，不能因为后来把主题收束到 internal
+verification 就只剩下一句“可观测性边界”。
+
+### 5.1 原始科学问题
+
+核心问题不是“JLens 能否预测正确率”，而是：
+
+> 当一个模型从不会完成某种推理，到学会、熟练并最终自动化这种推理时，计算
+> 是否会从显式、可言语化、可全局访问的 workspace，逐步编译到更局部、更专用
+> 的 automatic circuits？遇到新组合或分布外要求时，模型是否会重新招募该
+> workspace？
+
+暂称这一过程为 **cognitive compilation**。这里的“编译”是待验证的机制假设，
+不是预设结论：
+
+\[
+\text{explicit / workspace-mediated computation}
+\;\longrightarrow\;
+\text{compressed / automatic computation}.
+\]
+
+与之相反的方向为 **workspace re-recruitment**：
+
+\[
+\text{practiced skill}
++ \text{novel composition}
+\;\longrightarrow\;
+\text{workspace ignition}.
+\]
+
+这直接对应 JLens 论文留下的开放问题：什么任务真正进入 J-space、表示如何进入
+J-space，以及熟练计算是否会绕过 verbalizable workspace。
+
+### 5.2 原始预测
+
+对同一种可控技能，跨训练阶段可能出现如下可证伪轨迹：
+
+1. **未掌握阶段**：没有稳定的正确语义轨迹，J-space recruitment 弱或混乱；
+2. **能力获得阶段**：显式概念、子目标和中间状态被广泛招募并跨层持续；
+3. **熟练阶段**：在保持正确率的同时，显式 workspace 痕迹缩短、变晚或减弱，
+   计算更多由专用 circuit 完成；
+4. **新组合/OOD 阶段**：旧技能需要以新方式组合，workspace 被重新点燃；
+5. **重新熟练阶段**：新组合经过练习后再次压缩或自动化。
+
+最重要的不是某个指标单调下降，而是区分：
+
+- 不会做，因此没有正确 workspace state；
+- 会做且显式推理；
+- 会做但已自动化；
+- 因新颖组合而重新显式推理。
+
+### 5.3 可测量对象
+
+原方案计划把“workspace recruitment”拆成多项而非一个任意分数：
+
+- **ignition**：任务相关表示从何层、何 token 开始稳定出现；
+- **persistence**：概念或状态在多少层、多少后续位置保持可读；
+- **broadcast**：同一语义信息是否能够影响多个后续位置和输出；
+- **explicit state coverage**：关键中间状态有多少进入可言语化表示；
+- **compression/bypass**：行为保持正确时，显式轨迹是否缩短或被其他 circuit
+  替代；
+- **re-recruitment**：新组合、规则变化或 OOD 深度是否恢复上述信号。
+
+JLens 是主要读出工具，但这些概念不能被循环定义成“JLens 看见了，所以存在
+workspace”。至少需要三角验证：
+
+- linear/logit/propositional probes；
+- SAE/T-SAE 或 transcoder features；
+- activation/path patching 或 feature/circuit ablation；
+- 行为层面的 novel-composition 与 skill-practice 对照。
+
+### 5.4 原始实验设计
+
+低算力版本不需要大规模 RL 或工业级预训练：
+
+1. 选择可以无限生成、具有精确中间状态的组合任务；
+2. 使用约 0.5B–1.5B 模型进行小规模从头训练、continued training 或 LoRA；
+3. 保存密集 checkpoints，覆盖“不会—学会—熟练”；
+4. 将训练过的原子技能重新组合成未训练组合；
+5. 在每个 checkpoint 上读取 JLens、probes 和代表性 circuits；
+6. 对 workspace-like state 做删除、交换和修复，测量其在各阶段的因果必要性；
+7. 最后用冻结的约 4B backbone 和自然任务做外部有效性验证。
+
+合适的受控任务包括：
+
+- PrOntoQA 式可生成逻辑链和 OOD proof depth；
+- shuffled objects、StepGame 或显式 state update；
+- 函数组合 \(f(x),g(x)\rightarrow f(g(x))\)；
+- 可程序化检查的多步算术、栈或有限状态任务。
+
+关键控制包括：
+
+- 匹配正确率，避免把“更熟练”误写成“准确率更高”；
+- 匹配输出长度和 prompt 格式；
+- 区分训练步数、任务难度、表示可读性和因果必要性；
+- 用 held-out 表述测试词汇不变性；
+- 避免只在单一 model family 上定义生命周期。
+
+### 5.5 原始创新主张
+
+如果实验成立，发现层贡献不是“模型熟练后更快”，而是：
+
+1. 给出 LLM 中从 deliberative workspace 到 automatic circuit 的机制生命周期；
+2. 证明 novelty/composition 会重新招募全局可访问表示；
+3. 解释为什么同一种内部观察工具会在不同熟练阶段得到相反结果；
+4. 将 global-workspace 主张从静态表示扩展为随学习变化的动态理论；
+5. 给出哪些内部证据具有因果作用、哪些只是 verbalizable readout 的边界。
+
+原始候选标题包括：
+
+- **From Deliberation to Automation: Cognitive Compilation in Language
+  Models**
+- **When Do Language Models Recruit a Global Workspace?**
+- **The Lifecycle of Verbalizable Computation in Language Models**
+
+### 5.6 与 internal verification 的结合
+
+用户随后要求该方向与 interpretable LLM / verification 更紧密关联。两者并非
+勉强拼接，cognitive compilation 可以解释内部验证的适用条件：
+
+\[
+\text{internal-verification quality}
+=
+f(\text{workspace recruitment},\text{sensor coverage}).
+\]
+
+由此形成当前更完整的命题：
+
+> 一个推理是否能被内部验证，不只取决于 verifier 强弱，还取决于本次计算是否
+> 进入了可读取、可归因的内部通道。
+
+具体预测是：
+
+- 新颖、deliberative 计算：workspace witness 较丰富，较容易定位内部偏离；
+- 熟练、automatic 计算：JLens witness 可能变弱，但这不等于推理不可靠；
+- 新组合：workspace re-recruitment，内部验证能力重新增强；
+- 因此 verifier 必须估计 observability，并在证据不足时 abstain。
+
+这一合并方向可暂称：
+
+- **Observability-Conditioned Internal Verification**
+- **When Can a Language Model Verify Its Own Reasoning?**
+- **Mechanism-Aware Verification across Deliberative and Automatic
+  Computation**
+
+cognitive compilation 不应只作为附录中的一个 subgroup。若初步 checkpoint
+实验支持它，它可以成为解释“内部验证何时有效”的共同主发现；若不支持，则当前
+verification 方案仍可独立推进。
+
+### 5.7 曾讨论的过渡方案：Mechanistic Witnesses for External Verification
+
+在用户进一步澄清“仍然需要内部验证”之前，我们曾把方案改写为：
+
+> **Mechanistic Witnesses for External Reasoning Verification — When Do
+> Internal Traces Add Evidence Beyond Gold Rationales?**
+
+其形式为：
+
+\[
+V_{\mathrm{hybrid}}
+(q,r,a,r^*,a^*,\phi_{\mathrm{JLens}}(h)).
+\]
+
+JLens 不直接做 verifier，而是为外部强 LLM 提供 mechanistic witnesses，例如
+首次内部偏离、reasoning/readout failure 区分以及 CoT 是否可能是 post-hoc
+rationalization。比较条件为：
+
+1. question + answer；
+2. 加 candidate CoT；
+3. 再加 golden reasoning；
+4. candidate CoT + internal trace；
+5. golden reasoning + internal trace。
+
+核心边际量为：
+
+\[
+\Delta_{\mathrm{internal}}
+=
+\operatorname{Perf}(\text{gold + internal})
+-
+\operatorname{Perf}(\text{gold only}).
+\]
+
+这一方案不再作为当前论文主线，原因是：
+
+- 外部强 LLM 与 golden reasoning 可能已经足够完成普通 correctness 判断；
+- 主贡献容易退化为“给 judge 多一种输入后涨点”；
+- 外部 LLM 可能把噪声 JLens tokens 编造成连贯但虚假的机制故事；
+- 它不能替代对求解模型自身内部状态的因果验证。
+
+但它仍应保留为重要 baseline 和下游应用：用于测量内部证据在外部 reference
+之上的非冗余价值，而不是定义“内部验证”本身。
+
+### 5.8 第一轮方向排序记录
+
+当时在低算力约束下的方向排序为：
+
+1. **Workspace recruitment / cognitive compilation**：发现性、可行性和理论价值
+   最平衡，因此成为原始首选；
+2. **寻找 vocabulary-independent 的真实 workspace \(W\)-space**：理论上限最高，
+   但识别和因果证明风险更大；
+3. **Structured propositional/dynamic binding**：与 GSM8K 错误高度相关，但
+   propositional probes、state tracking 等相邻工作较拥挤；
+4. **JLens causal validity/certification**：必要且有价值，更适合作为所有主方向的
+   支撑贡献，而不是单独主线。
+
+当前研究路线不是否定第一项，而是把它进一步收束为：
+
+> **内部验证的可观测性为什么随计算机制、熟练度和新颖性变化。**
+
+## 6. 初期方法轮廓
 
 暂称 **Mechanistic Verification Trace (MVT)**。这只是研究载体，不是已经确定
 的最终模型。
@@ -205,7 +418,7 @@ z_{\ell,t} = \phi_{\mathrm{JLens}}(h_{\ell,t}).
 最终输出不只包含 correct/incorrect，还应包括 first-error、error type 和
 abstention。
 
-### 5.1 必须避免的弱版本
+### 6.1 必须避免的弱版本
 
 - 把 JLens top-k 复制到 GPT-4o-mini prompt，然后只报告分类准确率；
 - 只训练一个 hidden-state probe，与 ReProbe 类方法做小幅 AUROC 比较；
@@ -214,7 +427,7 @@ abstention。
 - 把相关 token readout 叙述成因果机制；
 - 用 GSM8K exact match 直接当作可靠 ground truth。
 
-### 5.2 Oral 级证据链
+### 6.2 Oral 级证据链
 
 1. **时间证据**：内部偏离稳定领先文本错误；
 2. **增量证据**：控制表面信号后内部轨迹仍增加信息；
@@ -223,12 +436,12 @@ abstention。
 5. **边界证据**：明确什么时候可观察、什么时候应 abstain；
 6. **闭环应用**：根据错误机制选择重算、局部修正或仅重新 readout。
 
-## 6. Exploration 01：Qwen3.5-4B × GSM8K difficult cases
+## 7. Exploration 01：Qwen3.5-4B × GSM8K difficult cases
 
 这是本研究的 **第一个 hypothesis-generation exploration**，不是正式 benchmark
 结果。
 
-### 6.1 设置
+### 7.1 设置
 
 - Backbone：本地 `Qwen3.5-4B`
 - Lens：已拟合的 Qwen3.5-4B Jacobian lens
@@ -250,7 +463,7 @@ abstention。
 注意：运行目录的顶层 `run_config.json` 来自 512-token base run；两个自适应样本
 的实际生成参数以各自 `generation.json` 及 `adaptive_run_manifest.json` 为准。
 
-### 6.2 结果
+### 7.2 结果
 
 - GSM8K exact-match：7/20；
 - 官方判错 13 题中：
@@ -270,7 +483,7 @@ abstention。
 
 它们共同指向 **binding 和 state tracking**，而不是基本算术能力。
 
-### 6.3 JLens 初步观察
+### 7.3 JLens 初步观察
 
 - 错误回答与正确回答在最后几层都高度词汇收敛；
 - incorrect 的 chosen-token top-1 rate 约 95.94%，correct 约 95.31%；
@@ -285,7 +498,7 @@ abstention。
 后续应在人工确认的首次语义分歧附近，分析关系、实体和状态转移，而不是继续对
 整段输出平均 gold digit rank。
 
-### 6.4 Exploration 01 的限制
+### 7.4 Exploration 01 的限制
 
 - \(n=20\)，不能做总体统计主张；
 - 样本由既有 wrong/difficult 列表选取，存在选择偏差；
@@ -295,7 +508,7 @@ abstention。
 - 没有 causal intervention；
 - 只使用一个 backbone 和一个任务家族。
 
-## 7. 首批数据套件
+## 8. 首批数据套件
 
 数据已统一准备到
 [data/internal_verification](../../data/internal_verification/)。下载与规范化脚本
@@ -311,7 +524,7 @@ abstention。
 | BBEH-mini | 460 | 当前更困难的广义推理、状态/约束/首错任务 | exact target；部分任务在输入中含候选 thoughts | 已准备 |
 | REVEAL | eval/open | 开放域 step relevance、attribution、logic correctness | 人工逐步标签和 justification | 需用户接受 gated 条款后单独准备 |
 
-### 7.1 两条不可混淆的 activation 轨道
+### 8.1 两条不可混淆的 activation 轨道
 
 **Solver-state track** 研究目标模型在自己解题时的内部状态。适用数据包括
 MATH-500、PrOntoQA、StepGame、BBEH，以及后续经过可靠裁定的自然题目。我们让
@@ -332,7 +545,7 @@ ProcessBench 中的 candidate steps 来自数据集记录的其他生成模型�
 如果论文主线坚持“求解模型验证自身计算”，Solver-state track 必须是主实验，
 ProcessBench/REVEAL 只作为互补验证和强 process-verifier baseline。
 
-### 7.2 为什么不是只加更多数学题
+### 8.2 为什么不是只加更多数学题
 
 Exploration 01 暗示问题是 binding/state，而非算术 token。因此数据需要同时覆盖：
 
@@ -343,7 +556,7 @@ Exploration 01 暗示问题是 binding/state，而非算术 token。因此数据
 - **多类未饱和困难推理**：BBEH；
 - **开放域证据与逻辑验证**：REVEAL（受控访问）。
 
-### 7.3 统一数据 schema
+### 8.3 统一数据 schema
 
 每行 JSONL 均包含：
 
@@ -357,7 +570,7 @@ Exploration 01 暗示问题是 binding/state，而非算术 token。因此数据
 
 不支持的字段使用 `null` 或空列表，不能用外部 LLM 猜测补齐。
 
-### 7.4 数据准备命令
+### 8.4 数据准备命令
 
 ```bash
 HF_HOME=/tmp/jlensv_hf \
@@ -374,7 +587,7 @@ HF_HOME=/tmp/jlensv_hf \
 
 默认不下载 ProcessBench 的 GSM8K split，从数据层保证首批扩展不只是 GSM8K。
 
-### 7.5 已准备快照
+### 8.5 已准备快照
 
 - 总计：5060 条，7 个 JSONL；
 - ProcessBench：
@@ -388,11 +601,11 @@ HF_HOME=/tmp/jlensv_hf \
   恢复；
 - 所有文件均已通过 schema、唯一 ID、记录数和 SHA-256 校验。
 
-## 8. 文献与相邻工作
+## 9. 文献与相邻工作
 
 以下按它们在本项目中的作用整理，不代表简单罗列。
 
-### 8.1 JLens、可言语化表示与可解释 readout
+### 9.1 JLens、可言语化表示与可解释 readout
 
 - [Verbalizable Representations Form a Global Workspace in Language
   Models](https://transformer-circuits.pub/2026/workspace/index.html)：JLens 及
@@ -423,7 +636,7 @@ HF_HOME=/tmp/jlensv_hf \
   模型内部可能编码正确信息却输出错误，但内部 truth/error 信号存在跨数据集
   泛化问题。
 
-### 8.2 白盒/activation-based verification
+### 9.2 白盒/activation-based verification
 
 - [ReProbe, ACL
   2026](https://aclanthology.org/2026.acl-long.536/)：小型 verifier 读取 hidden
@@ -445,7 +658,7 @@ HF_HOME=/tmp/jlensv_hf \
   2025](https://papers.neurips.cc/paper_files/paper/2025/hash/8629b0fff229b8a27efb1422e990605f-Abstract-Conference.html)：
   使用 judge 自己的跨层表示提高判断，而不是读取被验证模型的机制。
 
-### 8.3 外部 verifier、gold reference 与逐步标注
+### 9.3 外部 verifier、gold reference 与逐步标注
 
 - [REVEAL, ACL 2024](https://aclanthology.org/2024.acl-long.254/)：逐步标注
   relevance、evidence attribution 与 logical correctness；现有 verifier 尤其
@@ -461,7 +674,7 @@ HF_HOME=/tmp/jlensv_hf \
   2026](https://iclr.cc/virtual/2026/poster/10008383)：训练 thinking judges 进行
   reference generation 与 self-correction，代表强外部 judge baseline。
 
-### 8.4 CoT faithfulness 与干预风险
+### 9.4 CoT faithfulness 与干预风险
 
 - [Thought Branches, ICLR
   2026](https://iclr.cc/virtual/2026/poster/10008605)：单条 CoT 不足以代表策略，
@@ -485,7 +698,7 @@ HF_HOME=/tmp/jlensv_hf \
   2026](https://iclr.cc/virtual/2026/poster/10010196)：即使只监督输出也可能间接使
   CoT 更不透明。
 
-### 8.5 机制形成、自动化与 cognitive compilation
+### 9.5 机制形成、自动化与 cognitive compilation
 
 - [Evolution of Concepts in Pretraining, ICLR
   2026](https://iclr.cc/virtual/2026/poster/10007251)：跨 checkpoint 跟踪 feature
@@ -506,7 +719,83 @@ HF_HOME=/tmp/jlensv_hf \
   2026](https://iclr.cc/virtual/2026/poster/10011359)：belief/state tracking 的
   token 间机制可作为 binding 分析 baseline。
 
-## 9. 数据与实验阶段
+## 10. Baseline 矩阵
+
+这里把 baseline 按它实际能回答的问题分层。**被验证模型（target/reasoner）**
+和**监督/标注模型（judge/annotator）**必须分开记录；一个方法用了
+DeepSeek-R1 或 GPT-OSS-120B 标注，不等于它在这些模型的内部状态上做验证。
+
+### 10.1 原论文中的模型与数据
+
+| 类别 | Baseline / 论文 | 原论文被验证或读取的 LLM | 训练数据与监督来源 | 原论文评测数据 | 对我们的角色 |
+|---|---|---|---|---|---|
+| 输出不确定性 | MaxProb、mean/max entropy、perplexity、temperature scaling、energy | 非特定；[CoE](https://proceedings.iclr.cc/paper_files/paper/2025/hash/b0b1cfc8ede53f452cabf8b9cf4eef76-Abstract-Conference.html) 在 Llama2-7B-Instruct、Llama3-8B/70B-Instruct、Qwen1.5-7B、Qwen2-7B/72B、Mistral-7B-Instruct 上统一比较 | 除 temperature calibration 外无需训练 | GSM8K、MATH、CommonsenseQA、TheoremQA、MMLU、Belebele | **必须复现**；排除“JLens 只是在读 confidence” |
+| 简单 hidden-state probe | layer sweep 的 logistic regression；2-layer MLP | [CRV](https://iclr.cc/virtual/2026/poster/10010813) 使用 Llama-3.1-8B-Instruct；[Masked by Consensus](https://aclanthology.org/2026.acl-long.483/) 使用 Llama-3.1-8B、Qwen2.5-7B、Gemma-2-9B，附加 Qwen3-32B | 当前任务 correctness / step-error label；后者用 target 自身正确性训练 self-probe 和 peer-model probe | CRV：Synthetic Boolean、Synthetic Arithmetic、annotated GSM8K；Masked：Mintaka、TriviaQA、HotpotQA（question-only）、MATH、GSM1K | **必须复现**；同时做 self/peer probe 与 disagreement subset |
+| 无训练内部轨迹 | [Chain-of-Embedding，CoE-R / CoE-C，ICLR 2025](https://proceedings.iclr.cc/paper_files/paper/2025/hash/b0b1cfc8ede53f452cabf8b9cf4eef76-Abstract-Conference.html) | Llama2-7B-Instruct、Llama3-8B/70B-Instruct、Qwen1.5-7B、Qwen2-7B/72B、Mistral-7B-Instruct | label-free；直接计算 progressive hidden-state trajectory 的幅度和方向变化 | GSM8K、MATH、CommonsenseQA、TheoremQA、MMLU、Belebele | **必须复现**；最便宜且直接的 trajectory baseline |
+| 轻量内部 step verifier | [ReProbe，ACL 2026](https://aclanthology.org/2026.acl-long.536/) | Qwen3-8B、Phi-4；native thinking：Qwen3-1.7B、Qwen3-32B | PRM800K 中 10.8K questions、每题 3 条轨迹，约 32K；structured CoT 用 self-annotation 或 DeepSeek-R1；native thinking 用 GPT-OSS-120B 标注 | ID：MATH、GSM8K、ProofNet；OOD planning：Trip/Meeting/Calendar Planning；OOD QA：StrategyQA、ScienceQA | **主 baseline**；复现 hidden-state 版本，小于 10M 参数 |
+| 机制图 verifier | [Circuit-based Reasoning Verification，CRV，ICLR 2026 Oral](https://iclr.cc/virtual/2026/poster/10010813) | 配有逐层 transcoders 的 Llama-3.1-8B-Instruct | 自行生成 solution 与 computation trace；GSM8K step label 由 Llama-3.3-70B-Instruct 辅助并人工复核；在 attribution-graph features 上训练 gradient boosting | Synthetic Boolean、Synthetic Arithmetic、annotated GSM8K | **机制级最强对照**；成本高，先在代表性子集复现 |
+| 内部/外部表示对照 | [Masked by Consensus，ACL 2026](https://aclanthology.org/2026.acl-long.483/) | target/source 均取 Llama-3.1-8B、Qwen2.5-7B、Gemma-2-9B；Qwen3-Embedding-8B 仅作 external source；另测 Qwen3-32B | full training split 上训练 L2 logistic regression；每 5 层取 question 最后 token；补充 MLP；标签始终是 target 的 correctness | Mintaka、TriviaQA、HotpotQA（无 supporting docs）、MATH、GSM1K；特别报告 target/source 分歧子集 | **必须复现其控制实验**；检验内部信息是否真的 non-redundant |
+| 潜变量过程验证 | [Latent Veracity Inference，ICLR 2026](https://iclr.cc/virtual/2026/poster/10008278) | Qwen3-4B、Qwen3-8B、Llama-3.2-3B、Llama-3-8B | Veracity Search 用 gold final answer likelihood 搜索 step-veracity；AVI 用搜索产生的 pseudo-label SFT，测试时不需要 gold | PrOntoQA、GSM8K、CommonsenseQA，各 1,000 examples | **强文本过程 baseline**；与内部 JLens 对齐但不读取 hidden states |
+| PRM | Qwen2.5-Math-7B-PRM800K；Qwen2.5-Math-PRM-7B；Skywork-PRM-1.5B | verifier 自身分别为 Qwen2.5-Math-7B、Qwen2.5-Math-7B、1.5B PRM；不读取被验证 solver 的内部状态 | 约 263K PRM800K、约 860K MC+LLM-judge consensus、Skywork 合成/偏好数据（版本依模型卡） | [ReProbe](https://aclanthology.org/2026.acl-long.536/) 统一测 MATH、GSM8K、ProofNet、三个 NaturalPlan、StrategyQA、ScienceQA；[ProcessBench](https://aclanthology.org/2025.acl-long.50/) 测下列四个数学子集 | **至少选 1.5B 与一个 7B**；代表专用外部 verifier |
+| 通用 LLM critic | [ProcessBench，ACL 2025](https://aclanthology.org/2025.acl-long.50/) 中的 prompted critics | 开源：Llama-3/3.1/3.3 8B–70B，Qwen2/2.5/Math/Coder 7B–72B，QwQ-32B-Preview；闭源：GPT-4o-0806、o1-mini | 无专用训练；prompt 逐步批判并输出最早错误段落 | ProcessBench：GSM8K 400、MATH 1,000、OlympiadBench 1,000、Omni-MATH 1,000，共 3,400 条人工首错标注 | **必须有一个本地 critic + 一个强 API judge**；分别测无 reference / 有 gold semantic state |
+| 随机与表面控制 | random、majority class、output length、step count、EOS、格式合法性、题目难度/输入表示 probe | 与 target 无关；在我们的 Qwen3.5-4B 生成上计算 | 无训练或仅在训练 split 拟合 | 我们的全部数据 | **必须复现**；防止数据与生成格式泄漏 |
+
+表中 PRM 的精确训练语料并不完全同质，正式实验中必须锁定具体 Hugging Face
+revision，并从相应 model card 记录数据许可、样本数和 chat template，不能只写
+“7B PRM”。ProcessBench 的阈值还使用 GSM8K 子集选择；跨数据集结果需要另外
+报告不调阈值的 AUROC/AUPR，避免把该校准优势带入 OOD 比较。
+
+### 10.2 我们实际要跑的优先级
+
+| 优先级 | 在同一 Qwen3.5-4B 轨迹上运行 | 数据 | 是否训练 | 目的 |
+|---|---|---|---|---|
+| P0 | random / majority、长度与格式、MaxProb、entropy、PPL、energy | 全部：GSM8K exploration、MATH-500、ProcessBench、PrOntoQA、StepGame、BBEH-mini | 否；temperature scaling 仅用 validation | 建立不可省略的行为与不确定性下界 |
+| P0 | layer-wise LR、2-layer MLP：question-only、visible-text、target hidden-state 三种输入 | 同上；按 question/group 切分 | 是，小规模 | 分离题目难度、文本信息和 target-private state |
+| P0 | CoE-R、CoE-C | 所有能取得逐层 hidden state 的同模型生成 | 否 | 与 JLens structured trajectory 做最直接比较 |
+| P0 | external-source LR/MLP：另一个 3B–9B 模型读取同一问题/可见 trace | MATH、GSM/算术和至少一个事实 QA；额外报告模型分歧子集 | 是，小规模 | 实现 Masked by Consensus 控制，证明或否定 non-redundant internal evidence |
+| P1 | ReProbe-hidden-state（固定参数预算，禁止 Attention+Logit 先占算力） | PRM800K train；先测 MATH/GSM8K，再零样本测 PrOntoQA、StepGame、BBEH 与 ProcessBench 非 GSM 子集 | 是，约 10M 参数 | 当前最强、最公平的轻量内部 verifier |
+| P1 | Qwen2.5-Math-PRM-7B 或 Qwen2.5-Math-7B-PRM800K；另加 Skywork-PRM-1.5B | ProcessBench、MATH、GSM8K；逻辑/OOD 仅在格式兼容时运行 | 否，直接推理 | 与专用外部过程 verifier 比较 |
+| P1 | 本地 7B–14B critic；强 API judge，分别无 reference / 有 gold state | ProcessBench、PrOntoQA、StepGame，以及我们的 matched corruptions | 否 | 与用户此前的外部 verification 路线接轨 |
+| P1 | Latent Veracity / 简化 VS | PrOntoQA、GSM8K、CommonsenseQA；若算力有限先各 200–500 条 | VS 否；AVI 暂不训练 | 比较 gold-answer-conditioned 的文本潜变量验证 |
+| P2 | CRV | Llama-3.1-8B 上的 synthetic Boolean/Arithmetic 与小规模 GSM8K | 是；需 transcoders/图提取 | 只做机制发现的代表性强对照，不作为全量刷榜项 |
+| P2 | SAE/T-SAE、propositional probes、activation/path patching | 受控状态任务和高置信 matched cases | 依方法 | 作为 sensor 与因果交叉验证，不冒充同任务 end-to-end verifier |
+
+### 10.3 公平比较协议
+
+1. **固定 solver trajectories**：同一个 target、prompt、decoding、token budget 和
+   原始输出；各 verifier 不得重新生成一套更容易的答案。
+2. **三种信息预算分开**：
+   `question-only`、`question + visible trace`、`target internal trace`；gold answer 或
+   gold semantic state 另成 reference-conditioned track。
+3. **分组切分**：同一题的多条 trajectory、corruption 和 paraphrase 必须在同一
+   split，禁止 trajectory-level 泄漏。
+4. **统一任务**：同时报告 outcome correctness、step correctness、first-error
+   localization、failure type、selective risk/coverage；不能拿 AUROC 与另一个方法
+   的 final-answer accuracy 横比。
+5. **统一预算**：报告 verifier 参数量、训练样本、额外 forward passes、标注器和
+   API cost；ReProbe 的外部标注版与 self-annotation 版分开。
+6. **主张门槛**：只有当 JLens 在 external-source probe、visible-text probe、
+   confidence 和题目难度控制之后仍有增益，并在 matched intervention 上得到因果
+   支持，才能称为“内部非冗余验证信号”。
+
+### 10.4 当前推荐的最小主表
+
+第一版论文主结果表不必堆满所有 PRM。最小但足够强的组合是：
+
+1. MaxProb / entropy / PPL；
+2. question-only、visible-trace、target-self、external-peer 四种 LR/MLP；
+3. CoE-R / CoE-C；
+4. ReProbe-hidden-state；
+5. 一个 1.5B PRM、一个 7B PRM；
+6. 一个本地 LLM critic、一个强 API judge（各自无 reference / 有 reference）；
+7. JLens lexical-only、structured JLens、structured JLens + observability；
+8. CRV 只在机制子表与代表性数据上比较。
+
+这个设计既不会把“内部传感器”和“70B 外部 judge”当作同成本方法，也能直接回答
+审稿人最可能提出的问题：JLens 的增益究竟来自 target-private computation，
+还是来自 confidence、题目难度、可见文本或额外监督。
+
+## 11. 数据与实验阶段
 
 ### Stage A：可行性与标注可靠性
 
@@ -532,7 +821,7 @@ HF_HOME=/tmp/jlensv_hf \
 5. 评估 selective prediction、first-error localization、failure type 和 targeted
    correction，而不只看 accuracy/AUROC。
 
-## 10. 当前开放决策
+## 12. 当前开放决策
 
 - JLens lexical concepts 如何升级为带 binding 的 structured state；
 - observability 是独立估计，还是由多传感器 disagreement 定义；

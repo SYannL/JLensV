@@ -1,0 +1,80 @@
+{
+  "suite": "jlensv-stage-a-internal-verification",
+  "schema_version": "stage-a-source-config-v1",
+  "seed": 20260724,
+  "stepgame_per_hop": 100,
+  "datasets": {
+    "processbench": {
+      "kind": "huggingface",
+      "repo_id": "Qwen/ProcessBench",
+      "revision": "3bdcd5371ed567559a78f559c01c13a6deee7604",
+      "splits": [
+        "math",
+        "olympiadbench",
+        "omnimath"
+      ],
+      "license": "Apache-2.0",
+      "note": "The GSM8K split is intentionally excluded from Stage A."
+    },
+    "math500": {
+      "kind": "huggingface",
+      "repo_id": "HuggingFaceH4/MATH-500",
+      "revision": "6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be",
+      "splits": [
+        "test"
+      ],
+      "license": "MATH dataset terms; research evaluation"
+    },
+    "prontoqa": {
+      "kind": "http_json",
+      "repo_id": "tasksource/prontoqa",
+      "revision": "2b99cc18e64b1684e29ba69f966306d9cc563e8d",
+      "configuration": "1hop_ProofsOnly_5testhops_random_noadj.json",
+      "license": "Apache-2.0"
+    },
+    "stepgame": {
+      "kind": "huggingface",
+      "repo_id": "ZhengyanShi/StepGame",
+      "revision": "6d859381dfd518cae3f073b268aaa323bf4dcf04",
+      "splits": [
+        "test"
+      ],
+      "license": "Source repository terms; research use"
+    },
+    "bbeh": {
+      "kind": "github_json",
+      "repo_id": "google-deepmind/bbeh",
+      "revision": "80d12ca916b7158f22293fcf3144f4d3d854d4be",
+      "license": "CC-BY-4.0 data / Apache-2.0 code",
+      "tasks": [
+        "boardgame_qa",
+        "boolean_expressions",
+        "buggy_tables",
+        "causal_understanding",
+        "disambiguation_qa",
+        "dyck_languages",
+        "geometric_shapes",
+        "hyperbaton",
+        "linguini",
+        "movie_recommendation",
+        "multistep_arithmetic",
+        "nycc",
+        "object_counting",
+        "object_properties",
+        "sarc_triples",
+        "shuffled_objects",
+        "spatial_reasoning",
+        "sportqa",
+        "temporal_sequence",
+        "time_arithmetic",
+        "web_of_lies",
+        "word_sorting",
+        "zebra_puzzles"
+      ]
+    }
+  },
+  "excluded": {
+    "processbench/gsm8k": "Avoids extending the initial GSM8K exploration with another GSM8K-only slice.",
+    "google/reveal": "Gated, evaluation-only data; download requires the user to accept its access and non-redistribution terms."
+  }
+}

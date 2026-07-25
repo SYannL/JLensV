@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jlensv.local/schema/internal-verification-v1.json",
+  "title": "JLensV Stage A internal-verification record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "dataset",
+    "source_split",
+    "task_family",
+    "input",
+    "gold",
+    "candidate",
+    "capabilities",
+    "metadata"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "internal-verification-v1"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dataset": {
+      "enum": [
+        "processbench",
+        "math500",
+        "prontoqa",
+        "stepgame",
+        "bbeh"
+      ]
+    },
+    "source_split": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_family": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "context",
+        "question",
+        "choices"
+      ],
+      "properties": {
+        "context": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string"
+        },
+        "choices": {
+          "type": "array"
+        }
+      }
+    },
+    "gold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "answer",
+        "reasoning_steps",
+        "first_error_step",
+        "process_correct",
+        "final_answer_correct",
+        "state_trace"
+      ],
+      "properties": {
+        "answer": {},
+        "reasoning_steps": {
+          "type": "array"
+        },
+        "first_error_step": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "process_correct": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "final_answer_correct": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "state_trace": {
+          "type": "array"
+        }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "answer",
+        "reasoning_steps",
+        "generator"
+      ],
+      "properties": {
+        "answer": {},
+        "reasoning_steps": {
+          "type": "array"
+        },
+        "generator": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "outcome_verification",
+        "process_verification",
+        "first_error_localization",
+        "gold_reasoning",
+        "exact_intermediate_state",
+        "structured_constraints"
+      ],
+      "properties": {
+        "outcome_verification": {
+          "type": "boolean"
+        },
+        "process_verification": {
+          "type": "boolean"
+        },
+        "first_error_localization": {
+          "type": "boolean"
+        },
+        "gold_reasoning": {
+          "type": "boolean"
+        },
+        "exact_intermediate_state": {
+          "type": "boolean"
+        },
+        "structured_constraints": {
+          "type": "boolean"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object"
+    }
+  }
+}
