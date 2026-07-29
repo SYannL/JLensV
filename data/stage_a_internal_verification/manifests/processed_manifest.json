@@ -1,0 +1,95 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2172694,
+      "dataset": "bbeh",
+      "license": "CC-BY-4.0 data / Apache-2.0 code",
+      "path": "processed/bbeh/mini.jsonl",
+      "records": 460,
+      "sha256": "7ab40677da2c815f21ed412c67f5fe3de901e4636597b2e3349b4882de781bf8",
+      "source_repo": "google-deepmind/bbeh",
+      "source_revision": "80d12ca916b7158f22293fcf3144f4d3d854d4be",
+      "source_split": "mini"
+    },
+    {
+      "bytes": 1117729,
+      "dataset": "math500",
+      "license": "MATH dataset terms; research evaluation",
+      "path": "processed/math500/test.jsonl",
+      "records": 500,
+      "sha256": "0cd433c2d019ed9eed4c45e8ac99a118e6ae69dc5b8bdfc847e10fcd6a164a4e",
+      "source_repo": "HuggingFaceH4/MATH-500",
+      "source_revision": "6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be",
+      "source_split": "test"
+    },
+    {
+      "bytes": 2515345,
+      "dataset": "processbench",
+      "license": "Apache-2.0",
+      "path": "processed/processbench/math.jsonl",
+      "records": 1000,
+      "sha256": "8e95b9a9f5916d7945b6b4dae4a2bd5fe903c0546539a95dfec2504c33974c8b",
+      "source_repo": "Qwen/ProcessBench",
+      "source_revision": "3bdcd5371ed567559a78f559c01c13a6deee7604",
+      "source_split": "math"
+    },
+    {
+      "bytes": 3398528,
+      "dataset": "processbench",
+      "license": "Apache-2.0",
+      "path": "processed/processbench/olympiadbench.jsonl",
+      "records": 1000,
+      "sha256": "562d2d186ae839133deaec07d97fd02fe2f2f38f3ec684051d0b792be0f4112a",
+      "source_repo": "Qwen/ProcessBench",
+      "source_revision": "3bdcd5371ed567559a78f559c01c13a6deee7604",
+      "source_split": "olympiadbench"
+    },
+    {
+      "bytes": 3420412,
+      "dataset": "processbench",
+      "license": "Apache-2.0",
+      "path": "processed/processbench/omnimath.jsonl",
+      "records": 1000,
+      "sha256": "1b92e49c89a4da4f74432aa35adb9d527a25aad318b0e3da3029de0256dcdb00",
+      "source_repo": "Qwen/ProcessBench",
+      "source_revision": "3bdcd5371ed567559a78f559c01c13a6deee7604",
+      "source_split": "omnimath"
+    },
+    {
+      "bytes": 174178,
+      "dataset": "prontoqa",
+      "license": "Apache-2.0",
+      "path": "processed/prontoqa/proofsonly_1hop_to_5hop_ood.jsonl",
+      "records": 100,
+      "sha256": "5f5542529eafbbd9d1396184814538b7a0d25b4a47b2ebecba29505668338c1b",
+      "source_repo": "tasksource/prontoqa",
+      "source_revision": "2b99cc18e64b1684e29ba69f966306d9cc563e8d",
+      "source_split": "test"
+    },
+    {
+      "bytes": 1904871,
+      "dataset": "stepgame",
+      "license": "Source repository terms; research use",
+      "path": "processed/stepgame/test_stratified_100_per_hop.jsonl",
+      "records": 1000,
+      "sha256": "7eb82c8ad19e9ec24894ef9460c3671ce9c87ec43f440d62835c578272c48c80",
+      "source_repo": "ZhengyanShi/StepGame",
+      "source_revision": "6d859381dfd518cae3f073b268aaa323bf4dcf04",
+      "source_split": "test"
+    }
+  ],
+  "preparation": {
+    "excluded": {
+      "google/reveal": "Gated, evaluation-only data; download requires the user to accept its access and non-redistribution terms.",
+      "processbench/gsm8k": "Avoids extending the initial GSM8K exploration with another GSM8K-only slice."
+    },
+    "seed": 20260724,
+    "stepgame_per_hop": 100
+  },
+  "raw_manifest_sha256": "8c941bbe47eb29b7946ed95ce2ba2439ae6d687c900bc3582b3cfd4bff823dc1",
+  "record_schema_version": "internal-verification-v1",
+  "schema_version": "stage-a-processed-manifest-v1",
+  "source_config_sha256": "5acf724f340e7e69472e9861740afb175ae13308eb3610fb3fa2cd4e2c310868",
+  "suite": "jlensv-stage-a-internal-verification",
+  "total_records": 5060
+}

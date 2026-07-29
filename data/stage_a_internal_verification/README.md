@@ -27,7 +27,7 @@ stage_a_internal_verification/
 │   ├── download_datasets.py     # 只下载固定版本的原始快照
 │   ├── process_datasets.py      # 只做确定性规范化与分层抽样
 │   ├── validate_datasets.py     # 完全离线的数据完整性验证
-│   └── _common.py               # 原子写入、哈希与 schema 检查
+│   └── _dataset_common.py       # 原子写入、哈希与 schema 检查
 ├── raw/                         # 第三方原始数据（默认 Git 忽略）
 ├── processed/                   # 统一 JSONL（默认 Git 忽略）
 ├── manifests/                   # SHA-256、字节数、记录数与 provenance

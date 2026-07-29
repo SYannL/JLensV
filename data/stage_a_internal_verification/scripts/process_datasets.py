@@ -12,7 +12,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
-from _common import (
+from _dataset_common import (
     DATASET_NAMES,
     DEFAULT_CONFIG,
     DEFAULT_MANIFEST_DIR,

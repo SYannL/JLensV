@@ -7,7 +7,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from _common import DEFAULT_MANIFEST_DIR, validate_manifest
+from _dataset_common import DEFAULT_MANIFEST_DIR, validate_manifest
 
 
 def parse_args() -> argparse.Namespace:

@@ -1,0 +1,11 @@
+nohup: ignoring input
+Loading model /home/shadeform/projects/JLensV/models/Qwen3.5-4B on physical GPU 0
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/426 [00:00<?, ?it/s]Loading weights: 100%|██████████| 426/426 [00:00<00:00, 11593.54it/s]
+[1/20] wrong_id=2 split=test index=51
+  generated answer=None correct=False complete=False
+[2/20] wrong_id=4 split=test index=245
+  generated answer=None correct=False complete=False
+[3/20] wrong_id=6 split=test index=147
+  generated answer='8' correct=False complete=False
+[4/20] wrong_id=8 split=test index=813

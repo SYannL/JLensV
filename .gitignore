@@ -7,22 +7,27 @@ dist/
 .pytest_cache/
 .ruff_cache/
 .ipynb_checkpoints/
+*.pid
 
-# Local Hugging Face model weights
-models/
+# Third-party model checkpoint. It is pinned and downloaded by
+# scripts/download_model.py; GitHub cannot store the 5.33 GB source shard.
+models/**
+!models/README.md
 
 # Downloaded and generated dataset artifacts
 data/internal_verification/
+data/dataset/gms8k/train.jsonl
+data/dataset/gms8k/test.jsonl
 data/stage_a_internal_verification/raw/**
 data/stage_a_internal_verification/processed/**
-data/stage_a_internal_verification/manifests/**
 !data/stage_a_internal_verification/raw/.gitignore
 !data/stage_a_internal_verification/processed/.gitignore
-!data/stage_a_internal_verification/manifests/.gitignore
 
-# jlens outputs
+# Local Stage A/B experiment pipelines and artifacts.
+data/stage_a_generation_audit/
+data/stage_b_solver_state_discovery/
+
+# Local output and scratch visualization artifacts.
 outputs/
-log/
-*.pt
 slice*.html
 slices/

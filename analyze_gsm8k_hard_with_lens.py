@@ -48,7 +48,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--samples-csv",
-        default="data/dataset/gms8k/hard_wrong_samples.csv",
+        default="data/selections/gsm8k_hard_wrong_samples.csv",
     )
     parser.add_argument("--gsm8k-dir", default="data/dataset/gms8k")
     parser.add_argument(

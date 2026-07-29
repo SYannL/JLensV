@@ -1,0 +1,407 @@
+nohup: ignoring input
+Loading model /home/shadeform/projects/JLensV/models/Qwen3.5-4B on physical GPU 0
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/426 [00:00<?, ?it/s]Loading weights: 100%|██████████| 426/426 [00:00<00:00, 10307.14it/s]
+[1/134] wrong_id=2 split=test index=51
+  generated answer='2' correct=False
+  saved Lens trace: 686 positions x 32 layers
+[2/134] wrong_id=4 split=test index=245
+  generated answer='4' correct=False
+  saved Lens trace: 720 positions x 32 layers
+[3/134] wrong_id=6 split=test index=147
+  generated answer=None correct=False
+  saved Lens trace: 671 positions x 32 layers
+[4/134] wrong_id=8 split=test index=813
+  generated answer=None correct=False
+  saved Lens trace: 667 positions x 32 layers
+[5/134] wrong_id=10 split=test index=1064
+  generated answer='60' correct=False
+  saved Lens trace: 687 positions x 32 layers
+[6/134] wrong_id=12 split=test index=94
+  generated answer='1' correct=False
+  saved Lens trace: 683 positions x 32 layers
+[7/134] wrong_id=14 split=test index=1080
+  generated answer='20' correct=False
+  saved Lens trace: 679 positions x 32 layers
+[8/134] wrong_id=16 split=test index=492
+  generated answer='1450' correct=False
+  saved Lens trace: 675 positions x 32 layers
+[9/134] wrong_id=18 split=test index=71
+  generated answer='2' correct=False
+  saved Lens trace: 670 positions x 32 layers
+[10/134] wrong_id=20 split=test index=831
+  generated answer='152' correct=False
+  saved Lens trace: 655 positions x 32 layers
+[11/134] wrong_id=22 split=test index=41
+  generated answer='6' correct=False
+  saved Lens trace: 666 positions x 32 layers
+[12/134] wrong_id=24 split=val index=131
+  generated answer='5' correct=False
+  saved Lens trace: 699 positions x 32 layers
+[13/134] wrong_id=26 split=test index=32
+  generated answer='3' correct=False
+  saved Lens trace: 658 positions x 32 layers
+[14/134] wrong_id=28 split=test index=389
+  generated answer=None correct=False
+  saved Lens trace: 697 positions x 32 layers
+[15/134] wrong_id=30 split=test index=301
+  generated answer='3' correct=False
+  saved Lens trace: 688 positions x 32 layers
+[16/134] wrong_id=32 split=test index=999
+  generated answer='5' correct=False
+  saved Lens trace: 670 positions x 32 layers
+[17/134] wrong_id=34 split=test index=1251
+  generated answer='20' correct=False
+  saved Lens trace: 663 positions x 32 layers
+[18/134] wrong_id=36 split=test index=369
+  generated answer='6' correct=False
+  saved Lens trace: 666 positions x 32 layers
+[19/134] wrong_id=38 split=test index=197
+  generated answer=None correct=False
+  saved Lens trace: 675 positions x 32 layers
+[20/134] wrong_id=40 split=test index=670
+  generated answer=None correct=False
+  saved Lens trace: 678 positions x 32 layers
+[21/134] wrong_id=42 split=test index=864
+  generated answer='2' correct=False
+  saved Lens trace: 692 positions x 32 layers
+[22/134] wrong_id=44 split=val index=188
+  generated answer='4' correct=False
+  saved Lens trace: 687 positions x 32 layers
+[23/134] wrong_id=46 split=test index=1192
+  generated answer='9' correct=False
+  saved Lens trace: 692 positions x 32 layers
+[24/134] wrong_id=48 split=val index=183
+  generated answer='40' correct=False
+  saved Lens trace: 693 positions x 32 layers
+[25/134] wrong_id=50 split=test index=950
+  generated answer='5' correct=False
+  saved Lens trace: 682 positions x 32 layers
+[26/134] wrong_id=52 split=val index=63
+  generated answer='42' correct=False
+  saved Lens trace: 672 positions x 32 layers
+[27/134] wrong_id=54 split=test index=240
+  generated answer='7.5' correct=False
+  saved Lens trace: 681 positions x 32 layers
+[28/134] wrong_id=56 split=test index=363
+  generated answer=None correct=False
+  saved Lens trace: 717 positions x 32 layers
+[29/134] wrong_id=58 split=test index=1073
+  generated answer='6' correct=False
+  saved Lens trace: 667 positions x 32 layers
+[30/134] wrong_id=60 split=test index=772
+  generated answer=None correct=False
+  saved Lens trace: 711 positions x 32 layers
+[31/134] wrong_id=62 split=test index=429
+  generated answer='2' correct=False
+  saved Lens trace: 658 positions x 32 layers
+[32/134] wrong_id=64 split=test index=963
+  generated answer='2' correct=False
+  saved Lens trace: 802 positions x 32 layers
+[33/134] wrong_id=66 split=val index=219
+  generated answer='30' correct=False
+  saved Lens trace: 712 positions x 32 layers
+[34/134] wrong_id=68 split=val index=79
+  generated answer=None correct=False
+  saved Lens trace: 679 positions x 32 layers
+[35/134] wrong_id=70 split=train index=190
+  generated answer='12' correct=False
+  saved Lens trace: 714 positions x 32 layers
+[36/134] wrong_id=72 split=test index=167
+  generated answer=None correct=False
+  saved Lens trace: 668 positions x 32 layers
+[37/134] wrong_id=74 split=val index=262
+  generated answer='13' correct=False
+  saved Lens trace: 677 positions x 32 layers
+[38/134] wrong_id=76 split=test index=667
+  generated answer='40' correct=False
+  saved Lens trace: 690 positions x 32 layers
+[39/134] wrong_id=78 split=test index=893
+  generated answer=None correct=False
+  saved Lens trace: 690 positions x 32 layers
+[40/134] wrong_id=80 split=test index=881
+  generated answer='4' correct=False
+  saved Lens trace: 692 positions x 32 layers
+[41/134] wrong_id=82 split=test index=1206
+  generated answer=None correct=False
+  saved Lens trace: 673 positions x 32 layers
+[42/134] wrong_id=84 split=test index=962
+  generated answer='31500' correct=False
+  saved Lens trace: 662 positions x 32 layers
+[43/134] wrong_id=86 split=test index=211
+  generated answer='150' correct=False
+  saved Lens trace: 694 positions x 32 layers
+[44/134] wrong_id=88 split=test index=900
+  generated answer=None correct=False
+  saved Lens trace: 726 positions x 32 layers
+[45/134] wrong_id=90 split=test index=677
+  generated answer=None correct=False
+  saved Lens trace: 669 positions x 32 layers
+[46/134] wrong_id=92 split=test index=148
+  generated answer=None correct=False
+  saved Lens trace: 687 positions x 32 layers
+[47/134] wrong_id=94 split=test index=786
+  generated answer='0.05' correct=False
+  saved Lens trace: 679 positions x 32 layers
+[48/134] wrong_id=96 split=val index=96
+  generated answer=None correct=False
+  saved Lens trace: 721 positions x 32 layers
+[49/134] wrong_id=98 split=test index=472
+  generated answer='4' correct=False
+  saved Lens trace: 656 positions x 32 layers
+[50/134] wrong_id=100 split=val index=59
+  generated answer='4' correct=False
+  saved Lens trace: 656 positions x 32 layers
+[51/134] wrong_id=102 split=train index=91
+  generated answer='1000' correct=False
+  saved Lens trace: 669 positions x 32 layers
+[52/134] wrong_id=104 split=train index=81
+  generated answer='100' correct=False
+  saved Lens trace: 666 positions x 32 layers
+[53/134] wrong_id=106 split=test index=795
+  generated answer='3' correct=False
+  saved Lens trace: 737 positions x 32 layers
+[54/134] wrong_id=108 split=test index=310
+  generated answer='6' correct=False
+  saved Lens trace: 694 positions x 32 layers
+[55/134] wrong_id=110 split=test index=1243
+  generated answer='1' correct=False
+  saved Lens trace: 679 positions x 32 layers
+[56/134] wrong_id=112 split=test index=1144
+  generated answer=None correct=False
+  saved Lens trace: 702 positions x 32 layers
+[57/134] wrong_id=114 split=train index=38
+  generated answer='8' correct=False
+  saved Lens trace: 660 positions x 32 layers
+[58/134] wrong_id=116 split=val index=102
+  generated answer='2048' correct=False
+  saved Lens trace: 669 positions x 32 layers
+[59/134] wrong_id=118 split=val index=118
+  generated answer='5' correct=False
+  saved Lens trace: 694 positions x 32 layers
+[60/134] wrong_id=120 split=test index=1315
+  generated answer='8' correct=False
+  saved Lens trace: 687 positions x 32 layers
+[61/134] wrong_id=122 split=test index=1213
+  generated answer='20' correct=False
+  saved Lens trace: 666 positions x 32 layers
+[62/134] wrong_id=124 split=train index=9
+  generated answer=None correct=False
+  saved Lens trace: 680 positions x 32 layers
+[63/134] wrong_id=126 split=test index=484
+  generated answer=None correct=False
+  saved Lens trace: 725 positions x 32 layers
+[64/134] wrong_id=128 split=test index=924
+  generated answer='4' correct=False
+  saved Lens trace: 723 positions x 32 layers
+[65/134] wrong_id=130 split=train index=15
+  generated answer='297' correct=True
+  saved Lens trace: 661 positions x 32 layers
+[66/134] wrong_id=132 split=test index=887
+  generated answer='30' correct=False
+  saved Lens trace: 685 positions x 32 layers
+[67/134] wrong_id=134 split=test index=149
+  generated answer='17' correct=False
+  saved Lens trace: 717 positions x 32 layers
+[68/134] wrong_id=136 split=val index=93
+  generated answer='3' correct=False
+  saved Lens trace: 667 positions x 32 layers
+[69/134] wrong_id=138 split=test index=447
+  generated answer='21' correct=False
+  saved Lens trace: 696 positions x 32 layers
+[70/134] wrong_id=140 split=test index=138
+  generated answer='18' correct=False
+  saved Lens trace: 664 positions x 32 layers
+[71/134] wrong_id=142 split=test index=261
+  generated answer=None correct=False
+  saved Lens trace: 668 positions x 32 layers
+[72/134] wrong_id=144 split=test index=176
+  generated answer='3' correct=False
+  saved Lens trace: 644 positions x 32 layers
+[73/134] wrong_id=146 split=val index=111
+  generated answer='40' correct=False
+  saved Lens trace: 653 positions x 32 layers
+[74/134] wrong_id=148 split=test index=1036
+  generated answer='1' correct=False
+  saved Lens trace: 673 positions x 32 layers
+[75/134] wrong_id=150 split=test index=121
+  generated answer='4' correct=True
+  saved Lens trace: 668 positions x 32 layers
+[76/134] wrong_id=152 split=test index=1024
+  generated answer='12' correct=False
+  saved Lens trace: 650 positions x 32 layers
+[77/134] wrong_id=154 split=val index=117
+  generated answer='210' correct=False
+  saved Lens trace: 681 positions x 32 layers
+[78/134] wrong_id=156 split=test index=1182
+  generated answer=None correct=False
+  saved Lens trace: 693 positions x 32 layers
+[79/134] wrong_id=158 split=test index=56
+  generated answer='40' correct=False
+  saved Lens trace: 695 positions x 32 layers
+[80/134] wrong_id=160 split=test index=1225
+  generated answer='4' correct=False
+  saved Lens trace: 665 positions x 32 layers
+[81/134] wrong_id=162 split=test index=12
+  generated answer=None correct=False
+  saved Lens trace: 687 positions x 32 layers
+[82/134] wrong_id=164 split=val index=268
+  generated answer='100' correct=False
+  saved Lens trace: 733 positions x 32 layers
+[83/134] wrong_id=166 split=train index=90
+  generated answer='9' correct=False
+  saved Lens trace: 662 positions x 32 layers
+[84/134] wrong_id=168 split=test index=155
+  generated answer=None correct=False
+  saved Lens trace: 692 positions x 32 layers
+[85/134] wrong_id=170 split=test index=1286
+  generated answer='5' correct=False
+  saved Lens trace: 687 positions x 32 layers
+[86/134] wrong_id=172 split=test index=641
+  generated answer=None correct=False
+  saved Lens trace: 656 positions x 32 layers
+[87/134] wrong_id=174 split=test index=1053
+  generated answer='1' correct=False
+  saved Lens trace: 763 positions x 32 layers
+[88/134] wrong_id=176 split=test index=286
+  generated answer='20' correct=False
+  saved Lens trace: 650 positions x 32 layers
+[89/134] wrong_id=178 split=train index=66
+  generated answer='18' correct=False
+  saved Lens trace: 723 positions x 32 layers
+[90/134] wrong_id=180 split=test index=89
+  generated answer='22' correct=False
+  saved Lens trace: 727 positions x 32 layers
+[91/134] wrong_id=182 split=test index=630
+  generated answer='1' correct=False
+  saved Lens trace: 672 positions x 32 layers
+[92/134] wrong_id=184 split=test index=1147
+  generated answer='1' correct=False
+  saved Lens trace: 680 positions x 32 layers
+[93/134] wrong_id=186 split=test index=1047
+  generated answer='40' correct=False
+  saved Lens trace: 685 positions x 32 layers
+[94/134] wrong_id=188 split=test index=1160
+  generated answer='60' correct=False
+  saved Lens trace: 739 positions x 32 layers
+[95/134] wrong_id=190 split=test index=14
+  generated answer='100' correct=False
+  saved Lens trace: 697 positions x 32 layers
+[96/134] wrong_id=192 split=test index=743
+  generated answer='3' correct=False
+  saved Lens trace: 671 positions x 32 layers
+[97/134] wrong_id=194 split=test index=645
+  generated answer='10' correct=False
+  saved Lens trace: 706 positions x 32 layers
+[98/134] wrong_id=196 split=test index=1265
+  generated answer=None correct=False
+  saved Lens trace: 639 positions x 32 layers
+[99/134] wrong_id=198 split=test index=114
+  generated answer=None correct=False
+  saved Lens trace: 672 positions x 32 layers
+[100/134] wrong_id=200 split=test index=87
+  generated answer=None correct=False
+  saved Lens trace: 720 positions x 32 layers
+[101/134] wrong_id=202 split=test index=63
+  generated answer=None correct=False
+  saved Lens trace: 660 positions x 32 layers
+[102/134] wrong_id=204 split=test index=78
+  generated answer='40' correct=False
+  saved Lens trace: 654 positions x 32 layers
+[103/134] wrong_id=206 split=test index=687
+  generated answer='1' correct=False
+  saved Lens trace: 651 positions x 32 layers
+[104/134] wrong_id=208 split=test index=879
+  generated answer='19' correct=False
+  saved Lens trace: 693 positions x 32 layers
+[105/134] wrong_id=210 split=test index=499
+  generated answer='100' correct=False
+  saved Lens trace: 672 positions x 32 layers
+[106/134] wrong_id=212 split=test index=777
+  generated answer='2.5' correct=False
+  saved Lens trace: 700 positions x 32 layers
+[107/134] wrong_id=214 split=train index=194
+  generated answer='2' correct=False
+  saved Lens trace: 675 positions x 32 layers
+[108/134] wrong_id=216 split=test index=375
+  generated answer='7' correct=False
+  saved Lens trace: 675 positions x 32 layers
+[109/134] wrong_id=218 split=test index=272
+  generated answer=None correct=False
+  saved Lens trace: 687 positions x 32 layers
+[110/134] wrong_id=220 split=test index=957
+  generated answer='75' correct=False
+  saved Lens trace: 663 positions x 32 layers
+[111/134] wrong_id=222 split=val index=22
+  generated answer='0' correct=False
+  saved Lens trace: 696 positions x 32 layers
+[112/134] wrong_id=224 split=val index=298
+  generated answer='28' correct=False
+  saved Lens trace: 679 positions x 32 layers
+[113/134] wrong_id=226 split=train index=189
+  generated answer=None correct=False
+  saved Lens trace: 691 positions x 32 layers
+[114/134] wrong_id=228 split=test index=293
+  generated answer=None correct=False
+  saved Lens trace: 698 positions x 32 layers
+[115/134] wrong_id=230 split=test index=303
+  generated answer='20' correct=False
+  saved Lens trace: 675 positions x 32 layers
+[116/134] wrong_id=232 split=test index=1226
+  generated answer='200' correct=False
+  saved Lens trace: 696 positions x 32 layers
+[117/134] wrong_id=234 split=test index=414
+  generated answer='2' correct=False
+  saved Lens trace: 680 positions x 32 layers
+[118/134] wrong_id=236 split=train index=120
+  generated answer='7' correct=True
+  saved Lens trace: 698 positions x 32 layers
+[119/134] wrong_id=238 split=test index=1097
+  generated answer='18' correct=False
+  saved Lens trace: 712 positions x 32 layers
+[120/134] wrong_id=240 split=test index=1238
+  generated answer='3' correct=False
+  saved Lens trace: 681 positions x 32 layers
+[121/134] wrong_id=242 split=test index=1190
+  generated answer='50' correct=False
+  saved Lens trace: 700 positions x 32 layers
+[122/134] wrong_id=244 split=test index=526
+  generated answer='5' correct=False
+  saved Lens trace: 693 positions x 32 layers
+[123/134] wrong_id=246 split=test index=172
+  generated answer=None correct=False
+  saved Lens trace: 664 positions x 32 layers
+[124/134] wrong_id=248 split=test index=810
+  generated answer='50' correct=False
+  saved Lens trace: 686 positions x 32 layers
+[125/134] wrong_id=250 split=test index=20
+  generated answer=None correct=False
+  saved Lens trace: 685 positions x 32 layers
+[126/134] wrong_id=252 split=test index=559
+  generated answer=None correct=False
+  saved Lens trace: 700 positions x 32 layers
+[127/134] wrong_id=254 split=val index=44
+  generated answer='1.5' correct=False
+  saved Lens trace: 652 positions x 32 layers
+[128/134] wrong_id=256 split=test index=665
+  generated answer='20' correct=False
+  saved Lens trace: 650 positions x 32 layers
+[129/134] wrong_id=258 split=val index=41
+  generated answer=None correct=False
+  saved Lens trace: 708 positions x 32 layers
+[130/134] wrong_id=260 split=test index=894
+  generated answer='3' correct=False
+  saved Lens trace: 685 positions x 32 layers
+[131/134] wrong_id=262 split=test index=946
+  generated answer='30' correct=False
+  saved Lens trace: 682 positions x 32 layers
+[132/134] wrong_id=264 split=test index=74
+  generated answer=None correct=False
+  saved Lens trace: 665 positions x 32 layers
+[133/134] wrong_id=266 split=test index=227
+  generated answer='240' correct=False
+  saved Lens trace: 677 positions x 32 layers
+[134/134] wrong_id=268 split=test index=944
+  generated answer=None correct=False
+  saved Lens trace: 690 positions x 32 layers
+Done: generated=134/134, correct=3/134, lens_complete=134/134

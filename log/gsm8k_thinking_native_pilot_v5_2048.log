@@ -1,0 +1,47 @@
+nohup: ignoring input
+Loading model /home/shadeform/projects/JLensV/models/Qwen3.5-4B on physical GPU 0
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/426 [00:00<?, ?it/s]Loading weights: 100%|██████████| 426/426 [00:00<00:00, 11662.56it/s]
+[1/20] wrong_id=2 split=test index=51
+  generated answer=None correct=False complete=False
+[2/20] wrong_id=4 split=test index=245
+  generated answer=None correct=False complete=False
+[3/20] wrong_id=6 split=test index=147
+  generated answer=None correct=False complete=False
+[4/20] wrong_id=8 split=test index=813
+  generated answer=None correct=False complete=False
+[5/20] wrong_id=10 split=test index=1064
+  generated answer=None correct=False complete=False
+[6/20] wrong_id=12 split=test index=94
+  generated answer=None correct=False complete=False
+[7/20] wrong_id=14 split=test index=1080
+  generated answer='26' correct=True complete=False
+[8/20] wrong_id=16 split=test index=492
+  generated answer=None correct=False complete=False
+[9/20] wrong_id=18 split=test index=71
+  generated answer=None correct=False complete=False
+[10/20] wrong_id=20 split=test index=831
+  generated answer=None correct=False complete=False
+[11/20] wrong_id=22 split=test index=41
+  generated answer=None correct=False complete=False
+[12/20] wrong_id=24 split=val index=131
+  generated answer=None correct=False complete=False
+[13/20] wrong_id=26 split=test index=32
+  generated answer='1800' correct=False complete=False
+[14/20] wrong_id=28 split=test index=389
+  generated answer=None correct=False complete=False
+[15/20] wrong_id=30 split=test index=301
+  generated answer=None correct=False complete=False
+[16/20] wrong_id=32 split=test index=999
+  generated answer=None correct=False complete=False
+[17/20] wrong_id=34 split=test index=1251
+  generated answer=None correct=False complete=False
+[18/20] wrong_id=36 split=test index=369
+  generated answer=None correct=False complete=False
+[19/20] wrong_id=38 split=test index=197
+  generated answer=None correct=False complete=False
+[20/20] wrong_id=40 split=test index=670
+  generated answer=None correct=False complete=False
+Done: generated=20/20, correct=1/20, lens_complete=0/20
+Completion quality: ended_with_eos=0/20, thinking_closed=2/20, valid_final_hash=2/20, complete=0/20 (0.0%)
+Recommendation: completion is below 95%; rerun the pilot in a new directory with --max-new-tokens 4096.

@@ -1,2 +1,4 @@
 *
 !.gitignore
+!raw_manifest.json
+!processed_manifest.json

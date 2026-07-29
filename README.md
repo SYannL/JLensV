@@ -2,6 +2,10 @@
 
 > **Reference implementation.** Not maintained and not accepting contributions.
 
+The pinned environment, model, benchmark download, and complete experiment
+artifact workflow are documented in
+[REPRODUCIBILITY.md](REPRODUCIBILITY.md).
+
 Companion code for [**Verbalizable Representations Form a Global Workspace in
 Language Models**](https://transformer-circuits.pub/2026/workspace/index.html).
 

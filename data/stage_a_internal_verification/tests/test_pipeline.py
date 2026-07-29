@@ -10,7 +10,7 @@ SUITE_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = SUITE_ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
-from _common import (  # noqa: E402
+from _dataset_common import (  # noqa: E402
     atomic_write_json,
     atomic_write_jsonl,
     base_record,
